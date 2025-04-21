@@ -3,12 +3,9 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>
-#include <fstream>
 #include <string>
-#include "request_parser.hpp"
-#include "response_builder.hpp"
-
-#define BUFFER_SIZE 1024
+#include <thread>
+#include "thread_handler.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
@@ -17,14 +14,24 @@ int main(int argc, char* argv[]) {
     }
 
     int port = std::stoi(argv[1]);
+    std::string log_file = argv[2];
     std::string document_root = argv[3];
 
+    // Establecer rutas globales para los threads
+    set_globals(document_root, log_file);
+
+    // Crear socket del servidor
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
         std::cerr << "Error al crear el socket\n";
         return 1;
     }
 
+    // Reutilizar puerto en caso de reinicio rápido
+    int opt = 1;
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    // Configurar dirección del servidor
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -52,28 +59,8 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        char buffer[BUFFER_SIZE] = {0};
-        read(new_socket, buffer, sizeof(buffer));
-
-        std::string buffer_str(buffer);
-        
-        // Analizar la solicitud HTTP
-        HttpRequest request = parse_request(buffer_str);
-        
-        // Verificar que la solicitud es válida
-        if (!request.valid) {
-            std::string response = build_400_response();
-            send(new_socket, response.c_str(), response.size(), 0);
-            close(new_socket);
-            continue;
-        }
-
-        // Construir la respuesta según el archivo solicitado
-        std::string file_path = document_root + (request.path == "/" ? "/index.html" : request.path);
-        std::string response = build_response(request.method, file_path);
-
-        send(new_socket, response.c_str(), response.size(), 0);
-        close(new_socket);
+        // Crear un thread para cada cliente
+        std::thread(handle_client, new_socket, client_addr).detach();
     }
 
     close(server_fd);
