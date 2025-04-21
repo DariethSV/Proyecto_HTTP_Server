@@ -3,17 +3,19 @@
 Un servidor HTTP/1.1 minimalista escrito en C++ que soporta métodos GET, HEAD y POST, con manejo de archivos estáticos y concurrencia básica.
 
 ## 📦 Estructura del Proyecto
+
+```
 Proyecto_HTTP_Server/
 ├── src/
-│ ├── server.cpp # Lógica principal del servidor
-│ ├── request_parser.cpp # Análisis de solicitudes HTTP
-│ ├── response_builder.cpp # Generación de respuestas
-│ └── logger.cpp # Registro de eventos
-├── include/ # Headers
-├── www/ # Archivos estáticos (HTML, imágenes)
-├── Makefile # Configuración de compilación
-└── README.md # Este archivo
-
+│   ├── server.cpp          # Lógica principal del servidor
+│   ├── request_parser.cpp  # Análisis de solicitudes HTTP
+│   ├── response_builder.cpp # Generación de respuestas
+│   └── logger.cpp          # Registro de eventos
+├── include/               # Headers
+├── www/                   # Archivos estáticos (HTML, imágenes)
+├── Makefile               # Configuración de compilación
+└── README.md              # Este archivo
+```
 ## 🧠 Módulos Principales
 
 ### 1. `server.cpp`
